@@ -2,12 +2,13 @@
   "expo": {
     "name": "meus-gastos",
     "slug": "meus-gastos",
+    "scheme": ["meus-gastos", "fb202303775478806"],
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/iconSplash.png",
+    "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/iconSplash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
