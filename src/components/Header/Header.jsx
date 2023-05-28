@@ -7,7 +7,10 @@ import {
     View 
 } from "react-native";
 
-export function Header() {
+export function Header({
+    photo,
+    nomeUser
+}) {
     const styles = estilo(StatusBar.currentHeight)
     return (
         <View 
@@ -15,10 +18,10 @@ export function Header() {
         >
             <Image 
             style={styles.avatar}
-            source={require('../../../assets/avatar.jpeg')}
+            source={{uri: `${photo}`}}
             />
             <TouchableOpacity>
-                <Text style={styles.textNameAvatar}>Leandro Gonçalves</Text>
+                <Text style={styles.textNameAvatar}>{nomeUser}</Text>
             </TouchableOpacity>
         </View>
     )

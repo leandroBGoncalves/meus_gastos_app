@@ -13,7 +13,8 @@ export function ContextProvider({ children }) {
     const [isAuthenticate, setIsAuthenticate] = useState(false);
     const [loadingLogin, setLoadingLogin] = useState(false);
 
-    async function handleGoogleSignIn() {
+    async function handleGoogleSignIn(feature) {
+        console.log('feature', feature)
         setLoadingLogin(true);
         try {
             const SCOPE = encodeURI('profile email');
@@ -27,6 +28,9 @@ export function ContextProvider({ children }) {
                 await googleUserInfos.get(`userinfo?alt=json&access_token=${params.access_token}`)
                 .then(response => {
                     console.log('respUserInfos', response)
+                    if (feature === 'signUp') {
+                        
+                    }
                     setIsAuthenticate(true);
                 })
                 .catch(err => { throw new Error(err) })               

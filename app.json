@@ -2,7 +2,7 @@
   "expo": {
     "name": "meus-gastos",
     "slug": "meus-gastos",
-    "scheme": ["meus-gastos", "fb202303775478806"],
+    "scheme": "meus-gastos",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/iconSplash.png",

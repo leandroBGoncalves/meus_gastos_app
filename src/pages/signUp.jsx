@@ -1,4 +1,6 @@
-import { useState } from "react";
+import 'react-native-url-polyfill/auto';
+import 'react-native-get-random-values';
+import { useContext, useState } from "react";
 import { 
     Image,
     StatusBar,
@@ -6,13 +8,26 @@ import {
     Text, 
     TextInput, 
     TouchableOpacity, 
-    View 
+    View,
+    Alert, 
+    ActivityIndicator
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 
+
+import axios from "axios";
+import * as AuthSession from 'expo-auth-session';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-export function SignUp() {
+import { CLIENT_ID,  REDIRECT_URI, GOOGLE_INFOS_URL } from '@env';
+import { supabase } from "../configs/supaBaseClient";
+
+const googleUserInfos = axios.create({
+    baseURL: GOOGLE_INFOS_URL,
+});
+
+export function SignUp({ navigation }) {
+    const [loadingSignUp, setLoadingSignUp] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
     const [email, setEmail] = useState("");
@@ -21,6 +36,123 @@ export function SignUp() {
     const [name, setName] = useState("");
     const [ddd, setDdd] = useState("");
     const [phone, setPhone] = useState("");
+    const [errorName, setErrorName] = useState(false);
+    const [errorEmail, setErrorEmail] = useState(false);
+    const [errorPassword, setErrorPassword] = useState(false);
+    const [errorConfirmPassword, setErrorConfirmPassword] = useState(false);
+
+    async function handleGoogleSignUp() {
+        setLoadingSignUp(true);
+        try {
+            const SCOPE = encodeURI('profile email');
+            const RESPONSE_TYPE = 'token';
+
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&scope=${SCOPE}`;
+
+            const { type, params } = await AuthSession.startAsync({ authUrl })
+
+            if (type === 'success') {
+                await googleUserInfos.get(`userinfo?alt=json&access_token=${params.access_token}`)
+                .then(async response => {
+                    await supabase
+                    .from('user')
+                    .insert(
+                            [
+                              { 
+                                name: response?.data?.name, 
+                                email: response?.data?.email,
+                                id_google: response?.data?.id, 
+                                photo_url: response?.data?.picture, 
+                              },
+                            ]
+                    ).then(response => {
+                        setLoadingSignUp(false);
+                        console.log('dataSignUp', response);
+                        Alert.alert('Usuário cadastrado com sucesso!');
+                        navigation.navigate('Home');                       
+                    }).catch(error => {
+                        setLoadingSignUp(false);
+                        console.log('errorSignUp', error);
+                        Alert.alert(error.message);                      
+                    })
+                    console.log('respUserInfosSignUp', response)
+                })
+                .catch(err => { throw new Error(err) })               
+            }
+        } catch (error) {
+            console.log(error)
+            setLoadingSignUp(false);
+        }
+    }
+
+    async function handleSignUpWithSupaBase() {
+        if (password !== confirmPassword) {
+            setErrorConfirmPassword(true);
+        } else {
+            setErrorConfirmPassword(false);
+        }
+
+        if (password.length < 6) {
+            setErrorPassword(true);
+        } else {
+            setErrorPassword(false);
+        }
+
+        if (email.length > 10) {
+            setErrorEmail(true);
+        } else {
+            setErrorEmail(false);
+        }
+
+        if (name.length < 3) {
+            setErrorName(true);
+        } else {
+            setErrorName(false);
+        }
+
+        if (
+            !errorConfirmPassword &&
+            !errorPassword &&
+            !errorEmail &&
+            !errorName
+            ) {
+                setLoadingSignUp(true);
+                try {
+                    await supabase
+                   .from('user')
+                   .insert(
+                            [
+                              { 
+                                name: name, 
+                                email: email,
+                                phone_number: ddd + phone,
+                                id_google: null, 
+                                photo_url: null, 
+                              },
+                            ]
+                    ).then(response => {
+                        setLoadingSignUp(false);
+                        console.log('dataSignUp', response);
+                        Alert.alert('Usuário cadastrado com sucesso!');
+                        navigation.navigate('Home');                       
+                    }).catch(error => {
+                        setLoadingSignUp(false);
+                        console.log('errorSignUp', error);
+                        Alert.alert(error.message);                      
+                    })
+
+                    let { data, error } = await supabase.auth.signUp({
+                        email: email,
+                        password: password,
+                    })
+                    console.log('respAuthSupabaseSignUp', data, error)
+
+                } catch (error) {
+                    console.log(error)
+                    setLoadingSignUp(false);
+                }
+            }
+    }
 
     const styles = estilo()
     return (
@@ -37,7 +169,7 @@ export function SignUp() {
                     <View style={styles.contentBtnCadSocial}>
                     <TouchableOpacity
                     style={styles.BTNCadGoogle}
-                    onPress={() => handleGoogleSignIn()}
+                    onPress={() => handleGoogleSignUp()}
                     >
                         <Text style={styles.textWhiteBTN}>continue with</Text>
                         <Image 
@@ -125,7 +257,21 @@ export function SignUp() {
                             </TouchableOpacity>
                         </View>
                     </View>
+                    <View style={styles.contentBtnCad}>
+                        <TouchableOpacity
+                        style={styles.BTNCad}
+                        onPress={() => handleSignUpWithSupaBase()}
+                        >
+                            <Text style={styles.textWhiteBTN}>Cadastrar</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
+                {loadingSignUp && 
+                <ActivityIndicator 
+                    style={styles.activityIndicator}
+                    animating={loadingSignUp}
+                    size="large"
+                />}
             </ScrollView>
         </View>
     )
@@ -229,6 +375,22 @@ const estilo = () => StyleSheet.create({
         marginTop: 10
     },
 
+    contentBtnCad: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 20
+    },
+
+    BTNCad: {
+        backgroundColor: '#89fc00',
+        width: '40%',
+        paddingVertical: 5,
+        borderRadius: 5,
+        alignItems: 'center'
+    },
+
     inputPhoneNumberLine: {
         flexDirection: 'row',
         width: '100%',
@@ -279,5 +441,15 @@ const estilo = () => StyleSheet.create({
         height: 30,
         marginLeft: 5,
         resizeMode: 'contain'
+    },
+
+    activityIndicator: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 })

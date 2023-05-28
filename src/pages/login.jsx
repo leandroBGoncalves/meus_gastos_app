@@ -1,3 +1,5 @@
+import 'react-native-url-polyfill/auto';
+import 'react-native-get-random-values';
 import { useContext, useState } from "react";
 import { 
     Image, 
@@ -6,18 +8,74 @@ import {
     View, 
     StatusBar, 
     TextInput, 
-    TouchableOpacity
+    TouchableOpacity,
+    Alert,
+    ActivityIndicator
 } from "react-native";
 
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import axios from "axios";
+import * as AuthSession from 'expo-auth-session';
 
-import { AuthContext } from "../context/contextProvider";
+import { CLIENT_ID,  REDIRECT_URI, GOOGLE_INFOS_URL } from '@env';
+import { supabase } from '../configs/supaBaseClient';
+
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const googleUserInfos = axios.create({
+    baseURL: GOOGLE_INFOS_URL,
+});
+
 
 export function Login({ navigation }) {
-    const { 
-        handleGoogleSignIn
-    } = useContext(AuthContext)
     const [showPassword, setShowPassword] = useState(false);
+    const [loadingLogin, setLoadingLogin] = useState(false);
+
+    async function handleGoogleSignIn() {
+        setLoadingLogin(true);
+        try {
+            const SCOPE = encodeURI('profile email');
+            const RESPONSE_TYPE = 'token';
+
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&scope=${SCOPE}`;
+
+            const { type, params } = await AuthSession.startAsync({ authUrl })
+
+            if (type === 'success') {
+                await googleUserInfos.get(`userinfo?alt=json&access_token=${params.access_token}`)
+                .then(async response => {
+                    checkUserDB(response?.data?.id);
+                })
+                .catch(err => { throw new Error(err) })               
+            }
+        } catch (error) {
+            console.log(error)
+            setLoadingLogin(false);
+            Alert.alert(`Erro ao buscar dados do google\n${error}`);
+        }
+    }
+
+    async function checkUserDB(id_google) {
+        let { data: user, error } = await supabase
+        .from('user')
+        .select("*")
+        .eq('id_google', id_google)
+        console.log('user', user)
+        console.log('error', error)
+        if (error) {
+            console.log('errorVerifyUser', error);
+            setLoadingLogin(false);
+            Alert.alert('Cadastro não localizado \n Faça seu cadastro!');
+        } else if (user.length === 0) {
+            setLoadingLogin(false);
+            Alert.alert('Cadastro não localizado\nFaça seu cadastro!');
+        } else {
+            setLoadingLogin(false);
+            console.log('sucessVerifyUser', user)
+            await AsyncStorage.setItem('data_user', JSON.stringify(user[0]));
+            navigation.navigate('Home');
+        }
+    }
 
     return (
         <View
@@ -78,15 +136,12 @@ export function Login({ navigation }) {
                             source={require('../../assets/google-logo-name.png')}
                         />
                     </TouchableOpacity>
-                    {/* <TouchableOpacity
-                    style={styles.BTNCadFacebook}
-                    >
-                        <Text style={styles.textWhiteBTN}>enter with </Text>
-                        <Image 
-                            style={styles.imgLoginSocial}
-                            source={require('../../assets/Facebook-Logo.png')}
-                        />
-                    </TouchableOpacity> */}
+                    {loadingLogin && 
+                    <ActivityIndicator
+                        style={styles.activityIndicator} 
+                        size="large"
+                        animating={loadingLogin}
+                    />}
                 </View>
             </View>
         </View>
@@ -226,5 +281,15 @@ const styles = StyleSheet.create({
         height: 30,
         marginLeft: 5,
         resizeMode: 'contain'
+    },
+
+    activityIndicator: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
     }
 })

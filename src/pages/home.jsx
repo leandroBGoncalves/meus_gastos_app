@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { 
     Text, 
     TouchableOpacity, 
     View,
     StyleSheet, 
-    TextInput
+    TextInput,
+    SafeAreaView,
+    KeyboardAvoidingView
 } from "react-native";
 import { Dialog } from 'react-native-paper';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import moment from "moment";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ExpensesShow } from "../components/expensesTable/tableExpenses";
 import { Header } from "../components/Header/Header";
@@ -19,7 +22,11 @@ import { CardSummary } from "../components/summary/summaryCard";
 export function Home() {
     const [visibleModalInner, setVisibleModalInner] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-    const [dateSelecyed, setDateSelected] = useState();
+    const [dateSelected, setDateSelected] = useState();
+    const [dataUserRetrieve, setDataUserRetrieve] = useState(null);
+    const [description, setDescription] = useState("");
+    const [amount, setAmount] = useState("");
+    const [installments, setInstallments] = useState("");
 
     const showDatePicker = () => {
         setDatePickerVisibility(true);
@@ -39,9 +46,40 @@ export function Home() {
         setVisibleModalInner(false);
     }
 
+    async function retrieveUserData() {
+        const dataUser = await AsyncStorage.getItem("data_user");
+        const userDataParse = JSON.parse(dataUser);
+        setDataUserRetrieve(userDataParse);
+        console.log(userDataParse);
+    }
+
+    function handleSendData() {
+        let parcelas = [
+            {
+                description: description,
+                amount: amount,
+                installments: installments,
+                date: dateSelected
+            }
+        ]
+        if (Number(installments) >= 1) {
+            if (Number(parcelas.length) < Number(installments)) {
+
+            }
+        }
+        console.log('installments', installments);
+    }
+
+    useEffect(() => {
+        retrieveUserData();
+    }, [])
+
     return (
-        <View style={styles.container}>
-            <Header/>
+        <SafeAreaView style={styles.container}>
+            <Header
+                photo={dataUserRetrieve?.photo_url}
+                nomeUser={dataUserRetrieve?.name}
+            />
             <CardSummary />
             <ExpensesShow />
             <View style={styles.contentBTNNew}>
@@ -60,67 +98,77 @@ export function Home() {
                     </Text>
                 </TouchableOpacity>
             </View>
-          <Dialog 
-          visible={visibleModalInner} 
-          onDismiss={hideDialog}
-          style={styles.modalInnerData}
-          >
-            <View>
-                <Text style={styles.labelSimple}>Descrição</Text>
-                <TextInput 
-                style={styles.inputSimple}
-                />
-            </View>
-            <View style={styles.boxInputSimple}>
-                <Text style={styles.labelSimple}>Valor</Text>
-                <TextInput 
-                style={styles.inputSimple}
-                />
-            </View>
-            <View 
-            style={styles.dueDatesAndInstallments}
+            <Dialog 
+            visible={visibleModalInner} 
+            onDismiss={hideDialog}
+            style={styles.modalInnerData}
             >
-                <TouchableOpacity 
-                onPress={() => showDatePicker()}
-                style={styles.boxDueDateContainer}
-                >
-                    <View
-                    style={styles.boxDueDate}
-                    >
-                        <Text style={styles.textLabelWhite}>Vencimento</Text>
-                        <MaterialCommunityIcons 
-                        name={'calendar-check'}
-                        style={{marginLeft: 5}}
-                        size={25} 
-                        color={'#FFFFFF'}
-                        />
-                        <DateTimePickerModal
-                          isVisible={isDatePickerVisible}
-                          mode="date"
-                          onConfirm={handleConfirm}
-                          onCancel={hideDatePicker}
+                <KeyboardAvoidingView>
+                    <View>
+                      <Text style={styles.labelSimple}>Descrição</Text>
+                      <TextInput 
+                          onChangeText={setDescription}
+                          style={styles.inputSimple}
+                      />
+                    </View>
+                    <View style={styles.boxInputSimple}>
+                        <Text style={styles.labelSimple}>Valor</Text>
+                        <TextInput 
+                            onChangeText={setAmount}
+                            style={styles.inputSimple}
                         />
                     </View>
-                    <Text style={styles.textLabelWhite}>{moment(dateSelecyed).format('DD/MM/YYYY')}</Text>
-                </TouchableOpacity>
-                <View>
-                    <Text style={styles.labelSimple}>Parcelas</Text>
-                    <TextInput 
-                    style={styles.inputInstAllMents}
-                    />
-                </View>
-            </View>
-            <TouchableOpacity style={styles.BTNSendRegister}>
-                <Text style={styles.textLabelWhite}>Enviar</Text>
-            </TouchableOpacity>
-          </Dialog>
-        </View>
+                    <View 
+                    style={styles.dueDatesAndInstallments}
+                    >
+                        <TouchableOpacity 
+                        onPress={() => showDatePicker()}
+                        style={styles.boxDueDateContainer}
+                        >
+                            <View
+                            style={styles.boxDueDate}
+                            >
+                                <Text style={styles.textLabelWhite}>Vencimento</Text>
+                                <MaterialCommunityIcons 
+                                name={'calendar-check'}
+                                style={{marginLeft: 5}}
+                                size={25} 
+                                color={'#FFFFFF'}
+                                />
+                                <DateTimePickerModal
+                                  isVisible={isDatePickerVisible}
+                                  mode="date"
+                                  onConfirm={handleConfirm}
+                                  onCancel={hideDatePicker}
+                                />
+                            </View>
+                            <Text style={styles.textLabelWhite}>{moment(dateSelected).format('DD/MM/YYYY')}</Text>
+                        </TouchableOpacity>
+                        <View>
+                            <Text style={styles.labelSimple}>Parcelas</Text>
+                            <TextInput 
+                                onChangeText={setInstallments}
+                                style={styles.inputInstAllMents}
+                                keyboardType='ascii-capable'
+                            />
+                        </View>
+                    </View>
+                    <TouchableOpacity 
+                        style={styles.BTNSendRegister}
+                        onPress={() => handleSendData()}
+                    >
+                        <Text style={styles.textLabelWhite}>Enviar</Text>
+                    </TouchableOpacity>
+                </KeyboardAvoidingView>
+            </Dialog>
+        </SafeAreaView>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#FFFFFF'
+        backgroundColor: '#FFFFFF',
+        paddingBottom: '50%'
     },
 
     contentBTNNew: {
@@ -147,7 +195,8 @@ const styles = StyleSheet.create({
 
     modalInnerData: {
         padding: 10,
-        borderRadius: 5
+        borderRadius: 5,
+        bottom: '10%',
     },
 
     inputSimple: {
