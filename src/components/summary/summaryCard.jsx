@@ -115,8 +115,8 @@ export function CardSummary() {
               renderItem={RenderItem}
               sliderWidth={SLIDER_WIDTH}
               itemWidth={ITEM_WIDTH}
-              layout={'stack'} 
-              layoutCardOffset={18}
+              layout={'default'} 
+              layoutCardOffset={15}
               firstItem={2}
             />
         </View>

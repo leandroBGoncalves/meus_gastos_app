@@ -32,9 +32,6 @@ let REDIRECT_URI = 'https://auth.expo.io/@leandro25goncalves/meus-gastos';
 export function Login({ navigation }) {
     const [showPassword, setShowPassword] = useState(false);
     const [loadingLogin, setLoadingLogin] = useState(false);
-    const [respType, setRespType] = useState('');
-    const [respparams, setRespParams] = useState(null);
-    const [errorGoogleLogin, setErrorGoogleLogin] = useState('');
 
     async function handleGoogleSignIn() {
         setLoadingLogin(true);
@@ -46,9 +43,6 @@ export function Login({ navigation }) {
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&scope=${SCOPE}`;
 
             const { type, params } = await AuthSession.startAsync({ authUrl })
-            setRespType(type);
-            setRespParams(params);
-            console.log('type', type, 'params', params);
 
             if (type === 'success') {
                 await googleUserInfos.get(`userinfo?alt=json&access_token=${params.access_token}`)
@@ -60,7 +54,6 @@ export function Login({ navigation }) {
         } catch (error) {
             setLoadingLogin(false);
             Alert.alert(`Erro ao buscar dados do google\n${error.message}`);
-            setErrorGoogleLogin(error.message);
         }
     }
 

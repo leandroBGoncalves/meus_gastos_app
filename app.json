@@ -7,8 +7,6 @@
     "orientation": "portrait",
     "icon": "./assets/iconSplash.png",
     "userInterfaceStyle": "automatic",
-    "currentFullName": "@leandro25goncalves/meus-gastos",
-    "originalFullName": "@leandro25goncalves/meus-gastos",
     "splash": {
       "image": "./assets/iconSplash.png",
       "resizeMode": "contain",
