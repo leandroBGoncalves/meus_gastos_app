@@ -48,7 +48,6 @@ export function Login({ navigation }) {
             const { type, params } = await AuthSession.startAsync({ authUrl })
             setRespType(type);
             setRespParams(params);
-            console.log('type', type, 'params', params);
 
             if (type === 'success') {
                 await googleUserInfos.get(`userinfo?alt=json&access_token=${params.access_token}`)
