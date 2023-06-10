@@ -1,21 +1,43 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { 
+    useEffect, 
+    useState 
+} from "react";
+import { 
+    StyleSheet, 
+    Text, 
+    TouchableOpacity, 
+    View 
+} from "react-native";
+import moment from "moment";
 import Filters from "../../libs/Filters";
 
 export function ExpensesLine({ data }) {
+    const [dueDate, setDueDate] = useState();
 
+    function filterTransactionByDate() {
+        let dateFiltered = data.due_dates.filter(date => moment(date).format('MM/YYYY') === moment().format('MM/YYYY'))
+        setDueDate(dateFiltered[0]);
+    }
+
+    useEffect(() => {
+        filterTransactionByDate()
+    }, [])
     const styles = estilo()
     return (
+        <>
+        {dueDate &&
         <TouchableOpacity style={styles.containerLine}>
             <View style={styles.celTitle}>
-                <Text>{data.title}</Text>
+                <Text>{data.description}</Text>
             </View>
             <View style={styles.celDateAndValue}>
-                <Text>{data.date}</Text>
+                <Text>{moment(dueDate).format('DD/MM/YYYY')}</Text>
             </View>
             <View style={styles.celDateAndValue}>
                 <Text>{Filters.convertMoneyTextMask(data.amount)}</Text>
             </View>
-        </TouchableOpacity>
+        </TouchableOpacity>}
+        </>
     )
 }
 

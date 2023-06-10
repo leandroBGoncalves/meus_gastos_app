@@ -16,30 +16,39 @@ import {
 import axios from "axios";
 import * as AuthSession from 'expo-auth-session';
 
-import { CLIENT_ID,  REDIRECT_URI, GOOGLE_INFOS_URL } from '@env';
+// import { CLIENT_ID,  REDIRECT_URI, GOOGLE_INFOS_URL } from '@env';
 import { supabase } from '../configs/supaBaseClient';
 
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const googleUserInfos = axios.create({
-    baseURL: GOOGLE_INFOS_URL,
+    baseURL: 'https://www.googleapis.com/oauth2/v1/',
+    // baseURL: GOOGLE_INFOS_URL,
 });
 
-
+let CLIENT_ID = '478803378481-a8ioc4cclla3q3bvfb3gkvcjcoplmm1s.apps.googleusercontent.com';
+let REDIRECT_URI = 'https://auth.expo.io/@leandro25goncalves/meus-gastos';
 export function Login({ navigation }) {
     const [showPassword, setShowPassword] = useState(false);
     const [loadingLogin, setLoadingLogin] = useState(false);
+    const [respType, setRespType] = useState('');
+    const [respparams, setRespParams] = useState(null);
+    const [errorGoogleLogin, setErrorGoogleLogin] = useState('');
 
     async function handleGoogleSignIn() {
         setLoadingLogin(true);
         try {
             const SCOPE = encodeURI('profile email');
             const RESPONSE_TYPE = 'token';
+            const returnUrl = 'https://auth.expo.io/@leandro25goncalves/';
 
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&scope=${SCOPE}`;
 
             const { type, params } = await AuthSession.startAsync({ authUrl })
+            setRespType(type);
+            setRespParams(params);
+            console.log('type', type, 'params', params);
 
             if (type === 'success') {
                 await googleUserInfos.get(`userinfo?alt=json&access_token=${params.access_token}`)
@@ -49,9 +58,9 @@ export function Login({ navigation }) {
                 .catch(err => { throw new Error(err) })               
             }
         } catch (error) {
-            console.log(error)
             setLoadingLogin(false);
-            Alert.alert(`Erro ao buscar dados do google\n${error}`);
+            Alert.alert(`Erro ao buscar dados do google\n${error.message}`);
+            setErrorGoogleLogin(error.message);
         }
     }
 
@@ -60,10 +69,7 @@ export function Login({ navigation }) {
         .from('user')
         .select("*")
         .eq('id_google', id_google)
-        console.log('user', user)
-        console.log('error', error)
         if (error) {
-            console.log('errorVerifyUser', error);
             setLoadingLogin(false);
             Alert.alert('Cadastro não localizado \n Faça seu cadastro!');
         } else if (user.length === 0) {
@@ -71,7 +77,6 @@ export function Login({ navigation }) {
             Alert.alert('Cadastro não localizado\nFaça seu cadastro!');
         } else {
             setLoadingLogin(false);
-            console.log('sucessVerifyUser', user)
             await AsyncStorage.setItem('data_user', JSON.stringify(user[0]));
             navigation.navigate('Home');
         }

@@ -35,6 +35,19 @@ const convertMoneyTextMask = (value) => {
     return 'R$ 0,00';
   };
 
+  const removeMoneyMask = (value) => {
+    const stringValue = `${value}`.replace(/\D/g, '');
+    if (stringValue.length === 1) {
+      return parseFloat((value < 0 ? '-' : '') + `0.0${stringValue}`);
+    }
+    if (stringValue.length === 2) {
+      return parseFloat((value < 0 ? '-' : '') + `0.${stringValue}`);
+    }
+  
+    return parseFloat(stringValue.replace(/(\d+)(\d{2})$/, '$1.$2'));
+  };
+
   export default {
-    convertMoneyTextMask
+    convertMoneyTextMask,
+    removeMoneyMask
   };

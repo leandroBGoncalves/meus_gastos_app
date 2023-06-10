@@ -7,6 +7,8 @@
     "orientation": "portrait",
     "icon": "./assets/iconSplash.png",
     "userInterfaceStyle": "automatic",
+    "currentFullName": "@leandro25goncalves/meus-gastos",
+    "originalFullName": "@leandro25goncalves/meus-gastos",
     "splash": {
       "image": "./assets/iconSplash.png",
       "resizeMode": "contain",
@@ -20,12 +22,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/iconSplash.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.leandro25goncalves.meusgastos"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "4b490bf9-b835-4e96-a2fc-af040122093c"
+      }
     }
   }
 }

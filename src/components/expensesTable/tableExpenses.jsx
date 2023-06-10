@@ -1,70 +1,50 @@
-import { ScrollView, StyleSheet } from "react-native";
-import { Dimensions } from "react-native";
-import { Text, View } from "react-native";
+import { 
+    useContext, 
+    useEffect, 
+    useState 
+} from "react";
+import { 
+    ScrollView, 
+    StyleSheet, 
+    Dimensions,
+    Text,
+    View
+} from "react-native";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { AuthContext } from "../../context/contextProvider";
 import { ExpensesLine } from "../lineExpenses/lineExpenses";
 
 export function ExpensesShow() {
-    const data = [
-        {
-            title: 'Internet',
-            date: '10/05/2023',
-            amount: 100
-        },
-        {
-            title: 'Agua',
-            date: '10/05/2023',
-            amount: 128.9
-        },
-        {
-            title: 'Luz',
-            date: '10/05/2023',
-            amount: 200.48
-        },
-        {
-            title: 'Claro',
-            date: '10/05/2023',
-            amount: 144.5
-        },
-        {
-            title: 'Cartão Mãe',
-            date: '15/05/2023',
-            amount: 1300.96
-        },
-        {
-            title: 'Gasolina',
-            date: '10/05/2023',
-            amount: 400
-        },
-        {
-            title: 'Compra',
-            date: '10/05/2023',
-            amount: 1400
-        },
-        {
-            title: 'Compra',
-            date: '10/05/2023',
-            amount: 1400
-        },
-        {
-            title: 'Compra',
-            date: '10/05/2023',
-            amount: 1400
-        },
-        {
-            title: 'Compra',
-            date: '10/05/2023',
-            amount: 1233
-        },
-    ]
+    const {
+        getTransactions,
+        transactionsByUser
+    } = useContext(AuthContext);
+    const [dataUserRetrieve, setDataUserRetrieve] = useState('');
+
+    async function retrieveUserData() {
+        const dataUser = await AsyncStorage.getItem("data_user");
+        const userDataParse = JSON.parse(dataUser);
+        setDataUserRetrieve(userDataParse);
+    }
+
+    useEffect(() => {
+        retrieveUserData();
+    }, []);
+
+    useEffect(() => {
+        getTransactions(dataUserRetrieve.id);
+    }, [dataUserRetrieve])
 
     return (
         <ScrollView 
         style={styles.containerExpenses}
         fadingEdgeLength={80}
         >
-            {data.map(expense => {
+            {transactionsByUser.map(expense => {
                 return (
-                    <ExpensesLine key={expense.amount} data={expense}/>
+                    <ExpensesLine key={expense.id} data={expense}/>
                 )
             })}
         </ScrollView>

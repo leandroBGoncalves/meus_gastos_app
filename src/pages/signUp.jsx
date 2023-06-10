@@ -19,12 +19,16 @@ import axios from "axios";
 import * as AuthSession from 'expo-auth-session';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-import { CLIENT_ID,  REDIRECT_URI, GOOGLE_INFOS_URL } from '@env';
+// import { CLIENT_ID,  REDIRECT_URI, GOOGLE_INFOS_URL } from '@env';
 import { supabase } from "../configs/supaBaseClient";
 
 const googleUserInfos = axios.create({
-    baseURL: GOOGLE_INFOS_URL,
+    baseURL: 'https://www.googleapis.com/oauth2/v1/',
+    // baseURL: GOOGLE_INFOS_URL,
 });
+
+let CLIENT_ID = '478803378481-a8ioc4cclla3q3bvfb3gkvcjcoplmm1s.apps.googleusercontent.com';
+let REDIRECT_URI = 'https://auth.expo.io/@leandro25goncalves/meus-gastos';
 
 export function SignUp({ navigation }) {
     const [loadingSignUp, setLoadingSignUp] = useState(false);
@@ -67,20 +71,16 @@ export function SignUp({ navigation }) {
                             ]
                     ).then(response => {
                         setLoadingSignUp(false);
-                        console.log('dataSignUp', response);
                         Alert.alert('Usuário cadastrado com sucesso!');
                         navigation.navigate('Home');                       
                     }).catch(error => {
                         setLoadingSignUp(false);
-                        console.log('errorSignUp', error);
                         Alert.alert(error.message);                      
                     })
-                    console.log('respUserInfosSignUp', response)
                 })
                 .catch(err => { throw new Error(err) })               
             }
         } catch (error) {
-            console.log(error)
             setLoadingSignUp(false);
         }
     }
@@ -132,12 +132,10 @@ export function SignUp({ navigation }) {
                             ]
                     ).then(response => {
                         setLoadingSignUp(false);
-                        console.log('dataSignUp', response);
                         Alert.alert('Usuário cadastrado com sucesso!');
                         navigation.navigate('Home');                       
                     }).catch(error => {
                         setLoadingSignUp(false);
-                        console.log('errorSignUp', error);
                         Alert.alert(error.message);                      
                     })
 
@@ -145,10 +143,8 @@ export function SignUp({ navigation }) {
                         email: email,
                         password: password,
                     })
-                    console.log('respAuthSupabaseSignUp', data, error)
 
                 } catch (error) {
-                    console.log(error)
                     setLoadingSignUp(false);
                 }
             }
