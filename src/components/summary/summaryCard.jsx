@@ -12,7 +12,8 @@ import {
     StyleSheet 
 } from 'react-native';
 
-import Carousel from 'react-native-snap-carousel';
+// import Carousel from 'react-native-snap-carousel';
+import Carousel from 'react-native-reanimated-carousel';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from 'moment';
 
@@ -21,15 +22,15 @@ import { AuthContext } from '../../context/contextProvider';
 import Filters from '../../libs/Filters';
 
 export function CardSummary() {
+    const width = Dimensions.get('window').width;
     const {
         transactionsByUser,
     } = useContext(AuthContext);
-    const isCarousel = useRef(null)
     const [dataBalance, setDataBalance] = useState([]);
 
     
     const SLIDER_WIDTH = Dimensions.get('window').width
-    const ITEM_WIDTH = Math.round(SLIDER_WIDTH * 0.8)
+    const ITEM_WIDTH = Math.round(SLIDER_WIDTH * 0.98)
 
     function findDate(date) {
         let filtered = date.find(item => {return moment(item).format('MM-YYYY') === moment().format('MM-YYYY')})
@@ -79,18 +80,19 @@ export function CardSummary() {
                     break;
             }
         };
-        function renderIcom() {
-            switch (Object.keys(item)[0]) {
-                case 'incomes':
-                    return 'plus-thick';
-                case 'expenses':
-                    return 'exit-to-app'
-                case 'balance':
-                    return 'wallet-plus-outline'      
-                default:
-                    break;
-            }
-        };
+
+    function renderIcom() {
+        switch (Object.keys(item)[0]) {
+            case 'incomes':
+                return 'plus-thick';
+            case 'expenses':
+                return 'exit-to-app'
+            case 'balance':
+                return 'wallet-plus-outline'      
+            default:
+                break;
+        }
+    };
 
         return (
             <View style={(Object.keys(item)[0] === 'expenses' || Object.values(item)[0] < 0) ? styles.slideExpense : styles.slide}>
@@ -110,14 +112,17 @@ export function CardSummary() {
     return (
         <View style={styles.containerCard}>
             <Carousel
-              ref={isCarousel}
+              vertical
+              loop={false}
+              width={width}
+              height={width / 2}
               data={dataBalance}
               renderItem={RenderItem}
-              sliderWidth={SLIDER_WIDTH}
-              itemWidth={ITEM_WIDTH}
-              layout={'default'} 
-              layoutCardOffset={15}
-              firstItem={2}
+              mode={'parallax'} 
+              modeConfig={{
+                parallaxScrollingScale: 0.9,
+                parallaxScrollingOffset: 80,
+              }}
             />
         </View>
     )

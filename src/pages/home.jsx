@@ -25,12 +25,15 @@ import { CardSummary } from "../components/summary/summaryCard";
 import { AuthContext } from "../context/contextProvider";
 
 import Filters from "../libs/Filters";
+import { EditTransaction } from "../components/editTransaction/editTransaction";
 
 let parcelas = [];
 export function Home() {
     const {
         insertTransaction,
-        getTransactions
+        getTransactions,
+        handleEditingCancel,
+        isEditing
     } = useContext(AuthContext);
     const [visibleModalInner, setVisibleModalInner] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -114,7 +117,15 @@ export function Home() {
     function handleCategoryChange(categorySelected) {
         setCategory(categorySelected);
     }
+
+    async function getAllTransactions() {
+       await getTransactions(dataUserRetrieve?.id);
+    }
     
+    useEffect(() => {
+        getAllTransactions();
+    }, [dataUserRetrieve])
+
     const styles = estilos(category);
     return (
         <SafeAreaView style={styles.container}>
@@ -251,6 +262,10 @@ export function Home() {
                     </TouchableOpacity>
                 </ScrollView>
             </Dialog>
+            <EditTransaction
+                openEdit={isEditing}
+                handleClose={() => handleEditingCancel()}
+            />
         </SafeAreaView>
     )
 }

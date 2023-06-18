@@ -24,6 +24,18 @@ export function ContextProvider({ children }) {
     const [isAuthenticate, setIsAuthenticate] = useState(false);
     const [loadingLogin, setLoadingLogin] = useState(false);
     const [transactionsByUser, setTransactionsByUser] = useState([]);
+    const [isEditing, setIsEditing] = useState(false);
+    const [transactionsByIdTransactions, setTransactionsByIdTransactions] = useState([]);
+
+    function handleEditing(id) {
+        console.log('idTransactionContext', id)
+        setIsEditing(true);
+        getTransactionsByIdTransaction(id)
+    }
+
+    function handleEditingCancel() {
+        setIsEditing(false);
+    }
 
     async function handleGoogleSignIn(feature) {
         setLoadingLogin(true);
@@ -94,6 +106,24 @@ export function ContextProvider({ children }) {
         }
     }
 
+    async function getTransactionsByIdTransaction(transactionId) {
+        try {
+            let { data: transactions, error } = await supabase
+            .from('transactions')
+            .select("*")
+            .eq('id', transactionId)
+            if (error) {
+                console.log('errorGetTransactions', error)
+                throw new Error(error)
+            }
+            if (transactions) {
+                setTransactionsByIdTransactions(transactions);
+            }
+        } catch (err) {
+            Alert.alert('Error', err.message)
+        }
+    }
+
     return (
         <AuthContext.Provider value={{ 
             handleGoogleSignIn,
@@ -102,7 +132,11 @@ export function ContextProvider({ children }) {
             loadingLogin,
             insertTransaction,
             getTransactions,
-            transactionsByUser
+            transactionsByUser,
+            handleEditing,
+            handleEditingCancel,
+            isEditing,
+            transactionsByIdTransactions
         }} >
             {children}
         </AuthContext.Provider>
