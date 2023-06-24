@@ -18,31 +18,15 @@ import { ExpensesLine } from "../lineExpenses/lineExpenses";
 
 export function ExpensesShow() {
     const {
-        getTransactions,
         transactionsByUser
     } = useContext(AuthContext);
-    const [dataUserRetrieve, setDataUserRetrieve] = useState('');
-
-    async function retrieveUserData() {
-        const dataUser = await AsyncStorage.getItem("data_user");
-        const userDataParse = JSON.parse(dataUser);
-        setDataUserRetrieve(userDataParse);
-    }
-
-    useEffect(() => {
-        retrieveUserData();
-    }, []);
-
-    useEffect(() => {
-        getTransactions(dataUserRetrieve.id);
-    }, [dataUserRetrieve])
 
     return (
         <ScrollView 
         style={styles.containerExpenses}
         fadingEdgeLength={80}
         >
-            {transactionsByUser.map(expense => {
+            {transactionsByUser?.map(expense => {
                 return (
                     <ExpensesLine key={expense.id} data={expense}/>
                 )

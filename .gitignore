@@ -5,6 +5,7 @@ npm-debug.*
 *.jks
 *.env
 *.p8
+*.env
 *.p12
 *.key
 *.mobileprovision

@@ -10,7 +10,8 @@ import {
     StyleSheet, 
     TextInput,
     SafeAreaView,
-    ScrollView
+    ScrollView,
+    KeyboardAvoidingView
 } from "react-native";
 import { Dialog } from 'react-native-paper';
 
@@ -25,12 +26,15 @@ import { CardSummary } from "../components/summary/summaryCard";
 import { AuthContext } from "../context/contextProvider";
 
 import Filters from "../libs/Filters";
+import { EditTransaction } from "../components/editTransaction/editTransaction";
 
 let parcelas = [];
 export function Home() {
     const {
         insertTransaction,
-        getTransactions
+        getTransactions,
+        handleEditingCancel,
+        isEditing
     } = useContext(AuthContext);
     const [visibleModalInner, setVisibleModalInner] = useState(false);
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -114,10 +118,18 @@ export function Home() {
     function handleCategoryChange(categorySelected) {
         setCategory(categorySelected);
     }
+
+    async function getAllTransactions() {
+       await getTransactions(dataUserRetrieve?.id);
+    }
     
+    useEffect(() => {
+        getAllTransactions();
+    }, [dataUserRetrieve])
+
     const styles = estilos(category);
     return (
-        <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView style={styles.container} behavior="height">
             <Header
                 photo={dataUserRetrieve?.photo_url}
                 nomeUser={dataUserRetrieve?.name}
@@ -251,14 +263,18 @@ export function Home() {
                     </TouchableOpacity>
                 </ScrollView>
             </Dialog>
-        </SafeAreaView>
+            <EditTransaction
+                openEdit={isEditing}
+                handleClose={() => handleEditingCancel()}
+            />
+        </KeyboardAvoidingView>
     )
 }
 
 const estilos = (category) => StyleSheet.create({
     container: {
+        flex: 1,
         backgroundColor: '#FFFFFF',
-        paddingBottom: '50%'
     },
 
     contentBTNNew: {

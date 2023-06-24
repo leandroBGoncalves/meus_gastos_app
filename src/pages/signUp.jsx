@@ -71,16 +71,19 @@ export function SignUp({ navigation }) {
                             ]
                     ).then(response => {
                         setLoadingSignUp(false);
-                        Alert.alert('Usuário cadastrado com sucesso!');
-                        navigation.navigate('Home');                       
+                        setTimeout(() => {
+                            Alert.alert('Usuário cadastrado com sucesso!');
+                            navigation.navigate('Home');                                                  
+                        }, 500);
                     }).catch(error => {
                         setLoadingSignUp(false);
-                        Alert.alert(error.message);                      
+                        throw new Error(error);
                     })
                 })
                 .catch(err => { throw new Error(err) })               
             }
         } catch (error) {
+            Alert.alert(error.message);                      
             setLoadingSignUp(false);
         }
     }
