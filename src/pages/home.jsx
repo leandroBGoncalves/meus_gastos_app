@@ -10,7 +10,8 @@ import {
     StyleSheet, 
     TextInput,
     SafeAreaView,
-    ScrollView
+    ScrollView,
+    KeyboardAvoidingView
 } from "react-native";
 import { Dialog } from 'react-native-paper';
 
@@ -128,7 +129,7 @@ export function Home() {
 
     const styles = estilos(category);
     return (
-        <SafeAreaView style={styles.container}>
+        <KeyboardAvoidingView style={styles.container} behavior="height">
             <Header
                 photo={dataUserRetrieve?.photo_url}
                 nomeUser={dataUserRetrieve?.name}
@@ -266,14 +267,14 @@ export function Home() {
                 openEdit={isEditing}
                 handleClose={() => handleEditingCancel()}
             />
-        </SafeAreaView>
+        </KeyboardAvoidingView>
     )
 }
 
 const estilos = (category) => StyleSheet.create({
     container: {
+        flex: 1,
         backgroundColor: '#FFFFFF',
-        paddingBottom: '50%'
     },
 
     contentBTNNew: {

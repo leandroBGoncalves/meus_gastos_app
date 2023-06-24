@@ -26,9 +26,9 @@ export function ContextProvider({ children }) {
     const [transactionsByUser, setTransactionsByUser] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
     const [transactionsByIdTransactions, setTransactionsByIdTransactions] = useState([]);
+    const [loadingTransactions, setLoadingTransactions] = useState(false);
 
     function handleEditing(id) {
-        console.log('idTransactionContext', id)
         setIsEditing(true);
         getTransactionsByIdTransaction(id)
     }
@@ -107,6 +107,7 @@ export function ContextProvider({ children }) {
     }
 
     async function getTransactionsByIdTransaction(transactionId) {
+        setLoadingTransactions(true);
         try {
             let { data: transactions, error } = await supabase
             .from('transactions')
@@ -117,9 +118,34 @@ export function ContextProvider({ children }) {
                 throw new Error(error)
             }
             if (transactions) {
+                setLoadingTransactions(false);
                 setTransactionsByIdTransactions(transactions);
             }
         } catch (err) {
+            setLoadingTransactions(false);
+            Alert.alert('Error', err.message)
+        }
+    }
+
+    async function deleteTransaction(transactionId) {
+        setLoadingTransactions(true);
+        try {
+            let { error } = await supabase
+            .from('transactions')
+            .delete()
+            .eq('id', transactionId)
+            if (error) {
+                console.log('errorGetTransactions', error)
+                throw new Error(error)
+            }
+            if (!error) {
+                Alert.alert('Sucesso', 'Transação deletada com successo!')
+                setLoadingTransactions(false);
+                setIsEditing(false);
+            }
+        } catch (err) {
+            setLoadingTransactions(false);
+            setIsEditing(false);
             Alert.alert('Error', err.message)
         }
     }
@@ -136,7 +162,9 @@ export function ContextProvider({ children }) {
             handleEditing,
             handleEditingCancel,
             isEditing,
-            transactionsByIdTransactions
+            transactionsByIdTransactions,
+            loadingTransactions,
+            deleteTransaction
         }} >
             {children}
         </AuthContext.Provider>
